@@ -1,0 +1,10 @@
+# R data
+*.RData
+*.rdata
+
+# Results
+*.csv
+
+# Compiled TMB / C++ files
+*.dll
+*.o
