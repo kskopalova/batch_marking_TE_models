@@ -1,9 +1,13 @@
-# Simulation study: temporary-emigration capture-recapture models
+# Latent multinomial batch-marking temporary emigration model - simulations and real data analysis
 
 ```
 emigration_sims/
 ├── run_simulations.R      MAIN SCRIPT: the only file you edit (settings) and run
 ├── compile_models.R       compiles the C++ files once, before the first run
+├── real_data/             folder for fitting models to real data 
+│   ├── fit_real_data.R      main script: edit the design and data, then run it from inside real_data/
+│   ├── emigration_utils.R   functions for real data
+│   └── results/             real-data output only (model fits, csv files, latent-structure cache)
 ├── cpp/                   all C++ files (random_emigration, markovian_*, phitpt)
 ├── R/                     utility scripts, sourced by the main script
 │   ├── helpers.R            logit, ilogit, primary-period indices, ...
@@ -22,6 +26,9 @@ emigration_sims/
 ## How to use
 1. Put the C++ files in `cpp/` and run `compile_models.R` once (on the machine that will run the simulations).
 2. Open `run_simulations.R`, edit sections 1-4 and run it.
+
+## Fitting real data
+Go to `real_data/`, edit the design and the data vector in `fit_real_data.R` and run it with `real_data/` as the working directory (for example `cd real_data; R CMD BATCH fit_real_data.R fit_real_data.Rout`). It uses `real_data/emigration_utils.R` and the C++ files in `../cpp/` (shared with the simulations; run `compile_models.R` first, or the script compiles missing files). Output goes to `real_data/results/`, so nothing in `results/` (simulations) is touched. The real-data utilities are not in `R/` and are sourced with `local = TRUE`, so they cannot overwrite the simulation functions.
 
 ## What the main script does
 * **data.type** `"batch"` (batch-marking: observed data `c(m, n)`) or `"individual"` (counts of every observed capture history).
