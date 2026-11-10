@@ -55,7 +55,7 @@ for (f in c("helpers.R", "true_model.R", "design.R", "emigration_models.R", "noT
             "simulate.R", "run_sims.R", "summarise.R", "run_simulation.R"))
   source(file.path(root, "R", f))
 
-setting5 <- run.simulation(model = model, data.type = data.type, fit.TE = fit.TE, fit.noTE = fit.noTE,
+simulation <- run.simulation(model = model, data.type = data.type, fit.TE = fit.TE, fit.noTE = fit.noTE,
                              n.sims = n.sims, seed = seed,
                              n.primary = n.primary, n.secondary = n.secondary,
                              N = N, p = p, phi = phi, alpha = alpha, beta = beta,
