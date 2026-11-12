@@ -91,6 +91,8 @@ run.simulation <- function(model, data.type, fit.TE = TRUE, fit.noTE = FALSE,
     write.csv(emig.summary$summary, file.path(results.dir, paste0(stem, "_summary.csv")), row.names = FALSE)
   if (fit.noTE && !is.null(note.summary$summary))
     write.csv(note.summary$summary, file.path(results.dir, paste0(stem, if (fit.TE) "_noTE_summary.csv" else "_summary.csv")), row.names = FALSE)
+  if (fit.noTE && !is.null(note.summary$summary.avail))   # NoTE Nalive vs true numbers available
+    write.csv(note.summary$summary.avail, file.path(results.dir, paste0(stem, if (fit.TE) "_noTE_summary_avail.csv" else "_summary_avail.csv")), row.names = FALSE)
 
   assign(stem, out)
   save(list = stem, file = file.path(results.dir, paste0(stem, ".RData")))

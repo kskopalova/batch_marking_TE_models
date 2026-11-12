@@ -118,9 +118,13 @@ summarise.emigration <- function(model, run, S, true.counts) {
 # data, exactly as for the emigration models. Without emigration the individuals alive are the
 # individuals available for detection; the reference values for Nalive are the true numbers ALIVE
 # of each data set, i.e. the same reference as the numbers alive of the emigration models.
+#
+# summary.avail: the Nalive rows of the summary again, but with the true numbers AVAILABLE
+# for detection of each data set as the reference instead of the numbers alive (same
+# columns; mean.estimate, ci.width and n.missing are identical, the other columns change).
 summarise.noTE <- function(run, S, true.counts) {
   if (is.null(run$results))
-    return(list(info = run.info(NULL, run$failed, S$n.sims), summary = NULL))
+    return(list(info = run.info(NULL, run$failed, S$n.sims), summary = NULL, summary.avail = NULL))
   nper  <- length(S$n.secondary)
   nocca <- sum(S$n.secondary)
   par   <- c(N = S$N,
@@ -131,8 +135,11 @@ summarise.noTE <- function(run, S, true.counts) {
   ab    <- setNames(lapply(seq_len(nper), function(k) true.counts$alive[k, ]), nm)
   truth <- c(as.list(par), ab)
   type  <- setNames(c(rep("parameter", length(par)), rep("abundance", nper)), names(truth))
-  list(info    = run.info(run$results, run$failed, S$n.sims),
-       summary = summarise.sims(run$results, truth, type))
+  ab.avail <- setNames(lapply(seq_len(nper), function(k) true.counts$avail[k, ]), nm)
+  list(info          = run.info(run$results, run$failed, S$n.sims),
+       summary       = summarise.sims(run$results, truth, type),
+       summary.avail = summarise.sims(run$results, ab.avail,
+                                      setNames(rep("abundance", nper), nm)))
 }
 
 # Readable printout (values are rounded only here, never in the stored tables)

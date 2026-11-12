@@ -159,8 +159,9 @@ Open `run_simulations.R`, edit sections 1-4 and run the whole script (e.g. `sour
 | `<model>_<bm\|ind>_sims.csv` | raw results of the emigration model, one row per simulation |
 | `<model>_<bm\|ind>_summary.csv` | summary table of the emigration model |
 | `<model>_bm_noTE_sims.csv`, `<model>_bm_noTE_summary.csv` | the same for the NoTE model (if fitted) |
+| `<model>_bm_noTE_summary_avail.csv` | NoTE's numbers alive compared with the true numbers **available** for detection (if NoTE fitted; see [Summary tables](#note-numbers-alive-compared-with-numbers-available)) |
 | `<model>_<bm\|ind>_true_abundance.csv` | true numbers alive / available of every simulated data set |
-| `<model>_bm_noTEonly...` | files of a run with `fit.TE = FALSE` (NoTE model only) |
+| `<model>_bm_noTEonly...` | files of a run with `fit.TE = FALSE` (NoTE model only; the NoTE files are then named `..._noTEonly_sims.csv`, `..._noTEonly_summary.csv`, `..._noTEonly_summary_avail.csv`) |
 | `cache/` | latent histories and link matrices (slow to build, re-used by later runs) |
 
 The RData file holds one object named after the file (e.g. `atbt_bm`), a list with
@@ -170,7 +171,8 @@ $settings         settings of the run (model, data.type, true values, ...)
 $obscounts        simulated data, one column per data set
 $true.abundance   true numbers $alive and $avail (rows = periods, columns = data sets)
 $emigration       $results (raw), $failed, $info, $summary   (NULL if fit.TE = FALSE)
-$noTE             the same for the NoTE model                (NULL if not fitted)
+$noTE             the same for the NoTE model                (NULL if not fitted),
+                  plus $summary.avail: NoTE's Nalive compared with the true numbers available
 ```
 
 The same list is returned by `run.simulation()`, so after running the script it is also available as `simulation`.
@@ -283,4 +285,24 @@ They are determined for every simulated data set when the data are generated (`t
 * **alive** in period k: individuals whose latent history in period k is in state 1, 2 or 3;
 * **available** for detection: state 1 or 2.
 
-Bias = mean of (estimate - true), taken data set by data set; relative bias = mean of (estimate - true) / true x 100. For abundances `true.value` is the mean of the true values over the data sets. NoTE's `Nalive` is compared with the true numbers *alive* of the same data sets, the same reference as the emigration model.
+### How the columns are calculated
+
+Each converged simulation *i* has an estimate, interval limits Lo and Up and a true value. For parameters (N, p, phi, ...) the true value is the value used to simulate the data, the same for every data set. For period-level abundances it is the true number of **that** data set (from `$true.abundance`, matched by `iteration`), because the true numbers alive and available differ between data sets.
+
+| Column | Calculation over the converged simulations |
+|---|---|
+| `true.value` | mean of the true values |
+| `mean.estimate` | mean of the estimates |
+| `bias` | mean of (estimate - true), taken data set by data set; equal to `mean.estimate - true.value` |
+| `rel.bias.pct` | mean of (estimate - true) / true x 100, the average of the per-simulation relative errors (not `bias / true.value x 100`) |
+| `coverage` | % of intervals with Lo <= true <= Up, each interval checked against the true value of its own data set; simulations with a missing estimate or limit are excluded |
+| `ci.width` | mean of (Up - Lo), ignoring missing values |
+| `n.missing` | number of converged simulations with a missing estimate or interval limit |
+
+`mean.estimate`, `bias` and `rel.bias.pct` are `NA` if any converged simulation has a missing estimate (`n.missing` > 0).
+
+NoTE's `Nalive` in `$noTE$summary` is compared with the true numbers *alive* of the same data sets, the same reference as the emigration model.
+
+### NoTE numbers alive compared with numbers available
+
+Without emigration, NoTE's numbers alive estimate the individuals available for detection. `$noTE$summary.avail` (and `<model>_bm_noTE_summary_avail.csv`) therefore repeats the `Nalive1..K` rows of the NoTE summary with the true numbers **available** for detection of each data set as the reference, using the same calculations as above. The estimates are the same, so `mean.estimate`, `ci.width` and `n.missing` are identical to the `Nalive` rows of `$noTE$summary`; `true.value`, `bias`, `rel.bias.pct` and `coverage` change.
